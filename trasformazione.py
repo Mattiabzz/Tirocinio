@@ -49,7 +49,14 @@ def pad_or_trim(segment, window_size):
         # Riempie con zeri fino a window_size
         return np.pad(segment, ((0, 0), (0, window_size - segment.shape[1])), mode='constant')
     else:
-        return segment  # Se ha già la dimensione corretta      
+        return segment  # Se ha già la dimensione corretta     
+
+# Funzione per applicare il padding all'ultimo segmento se necessario
+def pad_last_segment(segment, window_size):
+    if segment.shape[1] < window_size:
+        # Applica padding con zeri fino a raggiungere window_size
+        return np.pad(segment, ((0, 0), (0, window_size - segment.shape[1])), mode='constant')
+    return segment     
 
 ### script
 
@@ -89,8 +96,21 @@ sfreq = raw.info['sfreq']  # Frequenza di campionamento
 
 #shape[0] -> righe |||| shape[1] -> colonne
 
-segment_length = int(window_size * sfreq)           #start , stop, step
-segments = [data[:, i:i+segment_length] for i in range(0, data.shape[1], segment_length)]
+segment_length = int(window_size * sfreq)           
+
+# Lista per contenere i segmenti
+segments = []
+
+# Cicla per creare le finestre temporali    #range -> start , stop, step
+for start in range(0, data.shape[1], segment_length):
+
+    segment = data[:, start:start + segment_length]  # Estrai un segmento
+    # Se questo è l'ultimo segmento e non ha la dimensione corretta, applica padding
+    if start + segment_length > data.shape[1]:
+        segment = pad_last_segment(segment, segment_length)
+    segments.append(segment)
+
+# segments = [data[:, i:i+segment_length] for i in range(0, data.shape[1], segment_length)]
 
 checkLunghezzaSegmenti(segments)
 
