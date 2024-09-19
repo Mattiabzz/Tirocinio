@@ -116,21 +116,13 @@ checkLunghezzaSegmenti(segments)
 
 # print(len(segments))
 
-# test = pad_or_trim(segments,window_size)
-
-# print(test)
-
-
-
-
-
-# segment_array = np.array(segments)   #conversione da lista ad array
+segment_array = np.array(segments)   #conversione da lista ad array
 
 # print(type(segments))
 
 # print(segments)
 
-# print(segment_array.shape) #formato (dati, canali, time_steps)
+print(segment_array.shape) #formato (dati (segmenti), canali, time_steps)
 
 # print(segment_array)
 
