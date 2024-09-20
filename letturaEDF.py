@@ -4,15 +4,40 @@ import os
 
 dirData = "Data/"
 
-#file_path = "Data/SARTINI^DAISY.edf"
+### metodo per la lettura con file in divisi per cartelle
 
-list = [f for f in os.listdir(dirData) if "edf" in f]
 
-for file_path in list:
+for dirpath, dirnames, filenames in os.walk(dirData):
+    print(f"Directory: {dirpath}")
+    for file in filenames:
+        if file.endswith('.edf'):  # Controlla se il file ha estensione .edf
+            file_path = os.path.join(dirpath, file)
+            print(f"\tFile: {file_path}")
+            raw = mne.io.read_raw_edf(file_path, preload=True)
 
-    raw = mne.io.read_raw_edf(dirData+file_path, preload=True)
+            ann = raw.annotations
 
-    print(raw.info)
+            print(ann)
 
-    raw.plot()
-    plt.show()
+            raw.plot()
+            plt.show()
+
+
+
+### metodo per la lettura con file in unica cartella
+
+
+# list = [f for f in os.listdir(dirData) if "edf" in f]
+
+# for file_path in list:
+
+#     raw = mne.io.read_raw_edf(dirData+file_path, preload=True)
+
+#     ann = raw.annotations
+
+#     print(ann)
+
+#     print(raw.info)
+
+#     raw.plot()
+#     plt.show()
