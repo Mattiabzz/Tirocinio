@@ -6,7 +6,7 @@ dirData = "Data/"
 
 ### metodo per la lettura con file in divisi per cartelle
 
-
+all_data = []
 for dirpath, dirnames, filenames in os.walk(dirData):
     print(f"Directory: {dirpath}")
     for file in filenames:
@@ -15,12 +15,21 @@ for dirpath, dirnames, filenames in os.walk(dirData):
             print(f"\tFile: {file_path}")
             raw = mne.io.read_raw_edf(file_path, preload=True)
 
-            ann = raw.annotations
+            all_data.append(raw)
 
-            print(ann)
+            sfreq = raw.info['sfreq']  # Frequenza di campionamento 
 
-            raw.plot()
-            plt.show()
+            print(sfreq)
+
+            # raw.plot()
+            # plt.show()
+
+
+# print(all_data) 
+
+# all_data.clear() #pulisce tutto il vettore
+
+# print(all_data)     
 
 
 
