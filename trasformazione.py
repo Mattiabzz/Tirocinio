@@ -2,7 +2,9 @@ import mne
 import matplotlib.pyplot as plt
 import os
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.model_selection import train_test_split
 import numpy as np
+from tensorflow.keras import layers, models
 
 
 ### funzioni
@@ -13,7 +15,6 @@ def checkMaxMin(data_normalized):
         min_val = np.min(data_normalized[i, :])  # Minimo del canale i
         max_val = np.max(data_normalized[i, :])  # Massimo del canale i
         print(f"Canale {i}: Min = {min_val:.6f}, Max = {max_val:.6f}")
-
 
 
 def checkMediaDeviazione(data_normalized):
@@ -191,6 +192,30 @@ for dirpath, dirnames, filenames in os.walk(dirData):
 print(segment_split_all)
 all_segments_standardized = np.array(segment_split_all)
 # print(all_segments_standardized.shape)
+
+######### rete neurale
+
+#aggiunta di una dimensione
+eeg_segments = np.expand_dims(all_segments_standardized, axis=-1)
+
+print(eeg_segments.shape)
+
+input_shape = eeg_segments.shape[1:]  # Restituisce (canali, campioni_temporali, 1)
+
+print("Forma dell'input:", input_shape)
+
+
+# Primo step: Dividere il dataset in 80% train+validation e 20% test    
+eeg_train_val, eeg_test = train_test_split(eeg_segments, test_size=0.2, random_state=42)
+
+# Secondo step: Dividere il train+validation set in 80% train e 20% validation
+eeg_train, eeg_val = train_test_split(eeg_train_val, test_size=0.25, random_state=42)  # 0.25 * 0.8 = 0.2 del totale
+
+# Verifica delle forme dei dati
+print("Forma dei dati di training:", eeg_train.shape)
+print("Forma dei dati di validation:", eeg_val.shape)
+print("Forma dei dati di test:", eeg_test.shape)
+
 
 
 
