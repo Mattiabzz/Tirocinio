@@ -5,6 +5,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 import numpy as np
 from tensorflow.keras import layers, models
+from tensorflow.keras.callbacks import EarlyStopping
 
 
 ### funzioni
@@ -121,6 +122,8 @@ dirData = "Data/"
 segment_split_all = []
 overlap = 0.5   #percentuale di sovrapposzione
 window_size = 15 # Lunghezza della finestra in secondi
+epoche = 1
+batch_size = 2
 
 
 for dirpath, dirnames, filenames in os.walk(dirData):
@@ -168,9 +171,9 @@ for dirpath, dirnames, filenames in os.walk(dirData):
 
             step = int(segment_length * (1 - overlap))
 
-            # segment_split = segment_signal(data_normalized,segment_length)
+            segment_split = segment_signal(data_normalized,segment_length)
 
-            segment_split = segment_signal_with_overlap(data_normalized,segment_length,step)
+            # segment_split = segment_signal_with_overlap(data_normalized,segment_length,step)
             # print(segment_split.shape) #formato (dati, canali, time_steps) 
 
 
@@ -216,10 +219,53 @@ print("Forma dei dati di training:", eeg_train.shape)
 print("Forma dei dati di validation:", eeg_val.shape)
 print("Forma dei dati di test:", eeg_test.shape)
 
+input_eeg = layers.Input(shape=input_shape)
+
+# Encoder convoluzionale
+x = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(input_eeg)
+x = layers.MaxPooling2D((2, 2), padding='same')(x)
+x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+# x = layers.MaxPooling2D((2, 2), padding='same')(x)
+
+# Bottleneck (la rappresentazione latente, codifica)
+encoded = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+
+# Decoder convoluzionale
+x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(encoded)
+x = layers.UpSampling2D((2, 2))(x)
+x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
+# x = layers.UpSampling2D((2, 2))(x)
+decoded = layers.Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
+
+# Creazione del modello Autoencoder
+autoencoder = models.Model(input_eeg, decoded)
+
+# Configurare l'early stopping                                  #verbose stampa il messegggio di attivazione di early stopping
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, restore_best_weights=True)
+
+# Compilazione del modello
+autoencoder.compile(optimizer='adam', loss='mse')
 
 
+autoencoder.summary()
 
 
+history = autoencoder.fit(eeg_train, eeg_train, 
+                epochs=epoche, 
+                batch_size=batch_size, 
+                shuffle=True, 
+                validation_data=(eeg_val, eeg_val),
+                callbacks=[early_stopping])
+
+
+if not os.path.exists(dirData+"weigths"):
+    os.makedirs(dirData+"weigths")
+
+#salvataggio modello
+autoencoder.save(dirData+'weigths/autoencoder_model.h5')
+
+# # Salvataggio solo dei pesi
+# autoencoder.save_weights('Data/weigths/autoencoder_weights')
 
 
 
