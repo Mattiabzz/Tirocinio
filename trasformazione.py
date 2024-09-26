@@ -121,8 +121,9 @@ def check_overlap(segments, segment_length, overlap, sfreq):
 
 #file_path = "Data/Sartini_Daisy/SARTINI^DAISY.edf"
 
-all_data = []
-dirData = "Data/"
+# all_data = []
+dirData = "Data/" #dirEdf = "Data/Edf"
+dirEdf = "Data/Edf"
 segment_split_all = []
 overlap = 0.5   #percentuale di sovrapposzione
 window_size = 15 # Lunghezza della finestra in secondi
@@ -131,70 +132,72 @@ batch_size = 2
 num_clusters = 5
 
 
-for dirpath, dirnames, filenames in os.walk(dirData):
-    print(f"Directory: {dirpath}")
+# for dirpath, dirnames, filenames in os.walk(dirData):
+#     print(f"Directory: {dirpath}")
 
-    segment_split_temp = []
+filenames = [f for f in os.listdir(dirEdf) if "edf" in f]
 
-    for file in filenames:
-        if file.endswith('.edf'):  # Controlla se il file ha estensione .edf
-            file_path = os.path.join(dirpath, file)
-            print(f"\tFile: {file_path}")
-            #raw = mne.io.read_raw_edf(file_path, preload=True)
+segment_split_temp = []
 
-            raw = mne.io.read_raw_edf(file_path, preload=True)
-            data, times = raw[:]
+for file in filenames:
+    if file.endswith('.edf'):  # Controlla se il file ha estensione .edf
+        file_path = os.path.join(dirEdf, file)
+        print(f"\tFile: {file_path}")
+        #raw = mne.io.read_raw_edf(file_path, preload=True)
 
-            # checkDistribuzione(data)
+        raw = mne.io.read_raw_edf(file_path, preload=True)
+        data, times = raw[:]
 
-            #######  normalizzazione dei segnali 
-            scaler = MinMaxScaler()
-            data_normalized = scaler.fit_transform(data.T).T #.T fa la trasposta perchè sklearn vuole i dati disposti per colonna
+        # checkDistribuzione(data)
 
-            #### fine normalizzazione
+        #######  normalizzazione dei segnali 
+        scaler = MinMaxScaler()
+        data_normalized = scaler.fit_transform(data.T).T #.T fa la trasposta perchè sklearn vuole i dati disposti per colonna
 
-
-            ####### standardizzazione
-
-            # scaler = StandardScaler()
-            # data_normalized = scaler.fit_transform(data.T).T #.T fa la trasposta perchè sklearn vuole i dati disposti per colonna
+        #### fine normalizzazione
 
 
-            # checkMaxMin(data_normalized) #min = 0 e max = 1
+        ####### standardizzazione
 
-            # checkMediaDeviazione(data_normalized) #media =~ 0 e std =~ 1
-
-
-            #### fine standarizzazione
-
-            #-> salvattagio in array di tutti gli egg letti e post trasformazione
-            sfreq = raw.info['sfreq']  # Frequenza di campionamento 
-
-            #shape[0] -> righe |||| shape[1] -> colonne
-
-            segment_length = int(window_size * sfreq)   
-
-            step = int(segment_length * (1 - overlap))
-
-            segment_split = segment_signal(data_normalized,segment_length)
-
-            # segment_split = segment_signal_with_overlap(data_normalized,segment_length,step)
-            # print(segment_split.shape) #formato (dati, canali, time_steps) 
+        # scaler = StandardScaler()
+        # data_normalized = scaler.fit_transform(data.T).T #.T fa la trasposta perchè sklearn vuole i dati disposti per colonna
 
 
-            #parte di controllo della sovrapposzione
-            # segment = np.array(segment_split)
+        # checkMaxMin(data_normalized) #min = 0 e max = 1
 
-            # check_overlap(segment, segment_length, overlap, sfreq)
-
+        # checkMediaDeviazione(data_normalized) #media =~ 0 e std =~ 1
 
 
-            segment_split_temp.append(segment_split)
+        #### fine standarizzazione
+
+        #-> salvattagio in array di tutti gli egg letti e post trasformazione
+        sfreq = raw.info['sfreq']  # Frequenza di campionamento 
+
+        #shape[0] -> righe |||| shape[1] -> colonne
+
+        segment_length = int(window_size * sfreq)   
+
+        step = int(segment_length * (1 - overlap))
+
+        segment_split = segment_signal(data_normalized,segment_length)
+
+        # segment_split = segment_signal_with_overlap(data_normalized,segment_length,step)
+        # print(segment_split.shape) #formato (dati, canali, time_steps) 
 
 
-    # print(segment_split_temp)
-    for i in segment_split_temp:
-        segment_split_all.extend(i)
+        #parte di controllo della sovrapposzione
+        # segment = np.array(segment_split)
+
+        # check_overlap(segment, segment_length, overlap, sfreq)
+
+
+
+        segment_split_temp.append(segment_split)
+
+
+# print(segment_split_temp)
+for i in segment_split_temp:
+    segment_split_all.extend(i)
 
 
 print(segment_split_all)
@@ -349,7 +352,9 @@ for k in k_range:
 # # Assegna ogni segmento EEG al cluster più vicino
 # cluster_assignments = kmeans.labels_
 
-
+max_silhouette = max(silhouette_scores)
+max_index = silhouette_scores.index(max_silhouette)
+max_k = k_range[max_index]
 
 
 # Creazione della figura
@@ -372,6 +377,8 @@ ax2.set_xlabel('Numero di cluster (k)')
 ax2.set_ylabel('Silhouette Score', color='orange')
 ax2.tick_params(axis='y', labelcolor='orange')
 ax2.grid()
+
+ax2.plot(max_k, max_silhouette, marker='o', color='red', markersize=10, label=f'Massimo Silhouette ({max_k}, {max_silhouette})')
 
 plt.tight_layout()
 
