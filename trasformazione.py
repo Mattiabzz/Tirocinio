@@ -3,7 +3,11 @@ import matplotlib.pyplot as plt
 import os
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Model
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 
@@ -124,6 +128,7 @@ overlap = 0.5   #percentuale di sovrapposzione
 window_size = 15 # Lunghezza della finestra in secondi
 epoche = 1
 batch_size = 2
+num_clusters = 5
 
 
 for dirpath, dirnames, filenames in os.walk(dirData):
@@ -222,20 +227,51 @@ print("Forma dei dati di test:", eeg_test.shape)
 input_eeg = layers.Input(shape=input_shape)
 
 # Encoder convoluzionale
-x = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(input_eeg)
-x = layers.MaxPooling2D((2, 2), padding='same')(x)
-x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-# x = layers.MaxPooling2D((2, 2), padding='same')(x)
+ # Blocchi Conv2D + Pooling
+x = layers.Conv2D(32, (3, 3), padding='same', activation='relu')(input_eeg)
+x = layers.Conv2D(32, (3, 3), padding='same', activation='relu')(x)
+x = layers.MaxPooling2D(pool_size=(2, 2))(x)  
+
+x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
+x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
+x = layers.MaxPooling2D(pool_size=(2, 2))(x)  
+
+x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
+x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
+x = layers.MaxPooling2D(pool_size=(2, 2))(x) 
+
+x = layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
+x = layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
+x = layers.MaxPooling2D(pool_size=(3, 1))(x)  
 
 # Bottleneck (la rappresentazione latente, codifica)
-encoded = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(x)
+encoded = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
 
 # Decoder convoluzionale
-x = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(encoded)
-x = layers.UpSampling2D((2, 2))(x)
-x = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-# x = layers.UpSampling2D((2, 2))(x)
-decoded = layers.Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
+# Blocchi di UpSampling2D + Conv2D Trasposta (Conv2DTranspose)
+x = layers.Conv2DTranspose(256, (3, 3), padding='same', activation='relu')(encoded)
+x = layers.Conv2DTranspose(256, (3, 3), padding='same', activation='relu')(x)
+x = layers.UpSampling2D(size=(3, 1))(x)  
+
+x = layers.Conv2DTranspose(128, (3, 3), padding='same', activation='relu')(x)
+x = layers.Conv2DTranspose(128, (3, 3), padding='same', activation='relu')(x)
+x = layers.UpSampling2D(size=(2, 2))(x)  
+
+x = layers.Conv2DTranspose(64, (3, 3), padding='same', activation='relu')(x)
+x = layers.Conv2DTranspose(64, (3, 3), padding='same', activation='relu')(x)
+x = layers.UpSampling2D(size=(2, 2))(x)  
+
+x = layers.Conv2DTranspose(32, (3, 3), padding='same', activation='relu')(x)
+x = layers.Conv2DTranspose(32, (3, 3), padding='same', activation='relu')(x)
+x = layers.UpSampling2D(size=(2, 2))(x)  
+
+# Strato finale per la ricostruzione
+decoded = layers.Conv2D(1, (3, 3), padding='same', activation='sigmoid')(x)  
+
+# Reshape finale per ottenere la forma corretta
+decoded = layers.Lambda(lambda x: tf.image.resize(x, (26, 1920)))(decoded)  # Output: (26, 1920, 1)
+    
+    
 
 # Creazione del modello Autoencoder
 autoencoder = models.Model(input_eeg, decoded)
@@ -250,12 +286,12 @@ autoencoder.compile(optimizer='adam', loss='mse')
 autoencoder.summary()
 
 
-history = autoencoder.fit(eeg_train, eeg_train, 
-                epochs=epoche, 
-                batch_size=batch_size, 
-                shuffle=True, 
-                validation_data=(eeg_val, eeg_val),
-                callbacks=[early_stopping])
+# history = autoencoder.fit(eeg_train, eeg_train, 
+#                 epochs=epoche, 
+#                 batch_size=batch_size, 
+#                 shuffle=True, 
+#                 validation_data=(eeg_val, eeg_val),
+#                 callbacks=[early_stopping])
 
 
 if not os.path.exists(dirData+"weigths"):
@@ -267,6 +303,31 @@ autoencoder.save(dirData+'weigths/autoencoder_model.h5')
 # # Salvataggio solo dei pesi
 # autoencoder.save_weights('Data/weigths/autoencoder_weights')
 
+##### estrazione delle feature 
+encoder = Model(inputs=autoencoder.input, outputs=encoded)
+
+encoder.summary()
+
+# Ottenere le feature codificate 
+eeg_features = encoder.predict(eeg_test)
+
+eeg_features = eeg_features.reshape(eeg_features.shape[0], -1)
+
+print(eeg_features.shape)
+
+##### clustering 
+kmeans = KMeans(n_clusters=num_clusters)
+
+# applicazione clustering sui dati codificati
+kmeans.fit(eeg_features)
+
+# Assegna ogni segmento EEG al cluster più vicino
+cluster_assignments = kmeans.labels_
+
+
+#### valutazione dei risultati
+sil_score = silhouette_score(eeg_features, cluster_assignments)
+print("Silhouette Score: ", sil_score)
 
 
 ###############
