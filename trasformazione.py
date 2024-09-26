@@ -373,9 +373,13 @@ ax2.set_ylabel('Silhouette Score', color='orange')
 ax2.tick_params(axis='y', labelcolor='orange')
 ax2.grid()
 
-
-# Layout per evitare sovrapposizioni
 plt.tight_layout()
+
+if not os.path.exists(dirData+"images"):
+    os.makedirs(dirData+"images")
+
+# Salvataggio dell'immagine
+plt.savefig(dirData+'images/grafico_cluster.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 
