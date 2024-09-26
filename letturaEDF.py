@@ -19,10 +19,10 @@ for dirpath, dirnames, filenames in os.walk(dirData):
 
             sfreq = raw.info['sfreq']  # Frequenza di campionamento 
 
-            print(sfreq)
+            # print(sfreq)
 
-            # raw.plot()
-            # plt.show()
+            raw.plot()
+            plt.show()
 
 
 # print(all_data) 
