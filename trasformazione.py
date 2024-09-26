@@ -318,16 +318,65 @@ print(eeg_features.shape)
 ##### clustering 
 kmeans = KMeans(n_clusters=num_clusters)
 
-# applicazione clustering sui dati codificati
-kmeans.fit(eeg_features)
-
-# Assegna ogni segmento EEG al cluster più vicino
-cluster_assignments = kmeans.labels_
+# Standardizzazione delle feature 
+# scaler = StandardScaler()
+# features_scaled = scaler.fit_transform(eeg_features)
 
 
-#### valutazione dei risultati
-sil_score = silhouette_score(eeg_features, cluster_assignments)
-print("Silhouette Score: ", sil_score)
+# Inizializzazione della lista per il WCSS
+wcss = []
+silhouette_scores = []
+k_range = range(1, 11)
+
+for k in k_range:
+
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(eeg_features)
+    cluster_assignments = kmeans.labels_
+    wcss.append(kmeans.inertia_)  # WCSS
+
+    #### valutazione dei risultati
+    if len(set(kmeans.labels_)) > 1:
+        sil_score = silhouette_score(eeg_features, cluster_assignments)
+    else:
+        sil_score = -1 
+    
+    silhouette_scores.append(sil_score)
+
+# # applicazione clustering sui dati codificati
+# kmeans.fit(eeg_features)
+
+# # Assegna ogni segmento EEG al cluster più vicino
+# cluster_assignments = kmeans.labels_
+
+
+
+
+# Creazione della figura
+fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(12, 12),sharex=True)
+
+# Grafico WCSS
+ax1.plot(k_range, wcss, marker='o', color='blue', label='WCSS')
+ax1.set_title('Metodo del Gomito e Silhouette Score')
+ax1.set_xlabel('Numero di cluster (k)')
+ax1.set_ylabel('WCSS', color='blue')
+ax1.tick_params(axis='y', labelcolor='blue')
+ax1.grid()
+
+# Creazione del secondo asse y
+
+# Grafico Silhouette Score
+ax2.plot(k_range, silhouette_scores, marker='o', color='orange')
+ax2.set_title('Silhouette Score per Numero di Cluster')
+ax2.set_xlabel('Numero di cluster (k)')
+ax2.set_ylabel('Silhouette Score', color='orange')
+ax2.tick_params(axis='y', labelcolor='orange')
+ax2.grid()
+
+
+# Layout per evitare sovrapposizioni
+plt.tight_layout()
+plt.show()
 
 
 ###############
