@@ -15,14 +15,18 @@ for dirpath, dirnames, filenames in os.walk(dirData):
             print(f"\tFile: {file_path}")
             raw = mne.io.read_raw_edf(file_path, preload=True)
 
-            all_data.append(raw)
+            # all_data.append(raw)
 
             sfreq = raw.info['sfreq']  # Frequenza di campionamento 
 
+
+            if sfreq != 128:
+                print(f"######################Attenzione #########################\nfrequenza di {sfreq} su {file}")
+
             # print(sfreq)
 
-            raw.plot()
-            plt.show()
+            # raw.plot()
+            # plt.show()
 
 
 # print(all_data) 

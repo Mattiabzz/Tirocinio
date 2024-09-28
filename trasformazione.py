@@ -130,6 +130,7 @@ window_size = 15 # Lunghezza della finestra in secondi
 epoche = 1
 batch_size = 2
 num_clusters = 5
+pazienza = 5
 
 
 # for dirpath, dirnames, filenames in os.walk(dirData):
@@ -200,9 +201,12 @@ for i in segment_split_temp:
     segment_split_all.extend(i)
 
 
-print(segment_split_all)
+# print(segment_split_all)
 all_segments_standardized = np.array(segment_split_all)
 # print(all_segments_standardized.shape)
+
+#cancellazione della lista originale 
+del segment_split_all
 
 ######### rete neurale
 
@@ -280,7 +284,7 @@ decoded = layers.Lambda(lambda x: tf.image.resize(x, (26, 1920)))(decoded)  # Ou
 autoencoder = models.Model(input_eeg, decoded)
 
 # Configurare l'early stopping                                  #verbose stampa il messegggio di attivazione di early stopping
-early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_loss', patience=pazienza, verbose=1, restore_best_weights=True)
 
 # Compilazione del modello
 autoencoder.compile(optimizer='adam', loss='mse')
@@ -295,6 +299,19 @@ autoencoder.summary()
 #                 shuffle=True, 
 #                 validation_data=(eeg_val, eeg_val),
 #                 callbacks=[early_stopping])
+
+if not os.path.exists(dirData+"images"):
+    os.makedirs(dirData+"images")
+
+# #grafico dell'apprendimento
+# fig, ax = plt.subplots()
+# ax.plot(history.history["loss"],'r', marker='.', label="Model 1 Train Loss")
+# ax.plot(history.history["val_loss"],'r--', marker='.', label="Model 1 Val Loss")
+
+# ax.legend()
+
+# plt.savefig(dirData+'images/grafico_apprendimento.png')
+# plt.close()
 
 
 if not os.path.exists(dirData+"weigths"):
@@ -381,9 +398,6 @@ ax2.grid()
 ax2.plot(max_k, max_silhouette, marker='o', color='red', markersize=10, label=f'Massimo Silhouette ({max_k}, {max_silhouette})')
 
 plt.tight_layout()
-
-if not os.path.exists(dirData+"images"):
-    os.makedirs(dirData+"images")
 
 # Salvataggio dell'immagine
 plt.savefig(dirData+'images/grafico_cluster.png', dpi=300, bbox_inches='tight')
