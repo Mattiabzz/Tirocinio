@@ -77,6 +77,11 @@ def segment_signal(data,segment_length):
         if start + segment_length > data.shape[1]:
             segment = pad_last_segment(segment, segment_length)
 
+        # Controlla la lunghezza del segmento
+        if segment.shape[1] != segment_length:
+            print(f"Warning: Segment of incorrect length {segment.shape[1]} instead of {segment_length}")
+            
+
         segments.append(segment)
     
     # checkLunghezzaSegmenti(segments)
@@ -127,8 +132,8 @@ dirData = "Data/" #dirEdf = "Data/Edf"
 dirEdf = "Data/Edf"
 dirEdf = "Data/Temp"
 segment_split_all = []
-overlap = 0.5   #percentuale di sovrapposzione
-window_size = 15 # Lunghezza della finestra in secondi
+overlap = 0.8   #percentuale di sovrapposzione
+window_size = 0.5 # Lunghezza della finestra in secondi
 epoche = 1
 batch_size = 2
 num_clusters = 5
@@ -182,9 +187,9 @@ for file in filenames:
 
         step = int(segment_length * (1 - overlap))
 
-        segment_split = segment_signal(data_normalized,segment_length)
+        # segment_split = segment_signal(data_normalized,segment_length)
 
-        # segment_split = segment_signal_with_overlap(data_normalized,segment_length,step)
+        segment_split = segment_signal_with_overlap(data_normalized,segment_length,step)
         # print(segment_split.shape) #formato (dati, canali, time_steps) 
 
 
@@ -205,7 +210,7 @@ for i in segment_split_temp:
 
 # print(segment_split_all)
 all_segments_standardized = np.array(segment_split_all)
-# print(all_segments_standardized.shape)
+print(all_segments_standardized.shape)
 
 #cancellazione della lista originale 
 del segment_split_all
