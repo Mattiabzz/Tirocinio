@@ -130,14 +130,14 @@ def check_overlap(segments, segment_length, overlap, sfreq):
 # all_data = []
 dirData = "Data/" #dirEdf = "Data/Edf"
 dirEdf = "Data/Edf"
-dirEdf = "Data/Temp"
+# dirEdf = "Data/Temp"
 segment_split_all = []
 overlap = 0.8   #percentuale di sovrapposzione
 window_size = 0.5 # Lunghezza della finestra in secondi
-epoche = 1
-batch_size = 2
+epoche = 60
+batch_size = 10
 num_clusters = 5
-pazienza = 5
+pazienza = 10
 
 
 # for dirpath, dirnames, filenames in os.walk(dirData):
@@ -300,25 +300,25 @@ autoencoder.compile(optimizer='adam', loss=MeanSquaredError())
 autoencoder.summary()
 
 
-# history = autoencoder.fit(eeg_train, eeg_train, 
-#                 epochs=epoche, 
-#                 batch_size=batch_size, 
-#                 shuffle=True, 
-#                 validation_data=(eeg_val, eeg_val),
-#                 callbacks=[early_stopping])
+history = autoencoder.fit(eeg_train, eeg_train, 
+                epochs=epoche, 
+                batch_size=batch_size, 
+                shuffle=True, 
+                validation_data=(eeg_val, eeg_val),
+                callbacks=[early_stopping])
 
 if not os.path.exists(dirData+"images"):
     os.makedirs(dirData+"images")
 
-# #grafico dell'apprendimento
-# fig, ax = plt.subplots()
-# ax.plot(history.history["loss"],'r', marker='.', label="Model 1 Train Loss")
-# ax.plot(history.history["val_loss"],'r--', marker='.', label="Model 1 Val Loss")
+#grafico dell'apprendimento
+fig, ax = plt.subplots()
+ax.plot(history.history["loss"],'r', marker='.', label="Model 1 Train Loss")
+ax.plot(history.history["val_loss"],'r--', marker='.', label="Model 1 Val Loss")
 
-# ax.legend()
+ax.legend()
 
-# plt.savefig(dirData+'images/grafico_apprendimento.png')
-# plt.close()
+plt.savefig(dirData+'images/grafico_apprendimento.png')
+plt.close()
 
 
 if not os.path.exists(dirData+"weigths"):
@@ -408,4 +408,4 @@ plt.tight_layout()
 
 # Salvataggio dell'immagine
 plt.savefig(dirData+'images/grafico_cluster.png', dpi=300, bbox_inches='tight')
-plt.show()
+# plt.show()
