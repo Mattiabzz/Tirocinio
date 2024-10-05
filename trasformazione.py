@@ -143,7 +143,10 @@ pazienza = 10
 # for dirpath, dirnames, filenames in os.walk(dirData):
 #     print(f"Directory: {dirpath}")
 
-dirData = os.path.abspath('Data') #<-- corretto il percorso 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+dirData = os.path.join(script_dir, 'Data')
+
+# dirData = os.path.abspath('Data') #<-- corretto il percorso 
 
 # Path relativo alla cartella 'edf'
 path_edf = os.path.join(dirData, "Edf")
@@ -160,12 +163,12 @@ if not os.path.exists(weights_path):
     os.makedirs(weights_path)
 
 
-# print(f"percorso dirData = {dirData}")
+print(f"percorso dirData = {dirData}")
 # print(f"percorso dirEdf = {path_edf}")
 # print(f"percorso images_path = {images_path}")
 # print(f"percorso weights_path = {weights_path}")
 
-# path_edf = os.path.join(dirData, "Temp")
+path_edf = os.path.join(dirData, "Temp")
 
 filenames = [f for f in os.listdir(path_edf) if "edf" in f]
 
