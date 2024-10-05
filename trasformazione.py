@@ -163,7 +163,7 @@ if not os.path.exists(weights_path):
     os.makedirs(weights_path)
 
 
-print(f"percorso dirData = {dirData}")
+# print(f"percorso dirData = {dirData}")
 # print(f"percorso dirEdf = {path_edf}")
 # print(f"percorso images_path = {images_path}")
 # print(f"percorso weights_path = {weights_path}")
@@ -318,7 +318,7 @@ x = layers.UpSampling2D(size=(2, 2))(x)
 decoded = layers.Conv2D(1, (3, 3), padding='same', activation='sigmoid')(x)  
 
 # Reshape finale per ottenere la forma corretta
-decoded = layers.Lambda(lambda x: tf.image.resize(x, (26, 1920)), output_shape=(26, 1920, 1))(decoded)  # Output: (26, 1920, 1)
+decoded = layers.Lambda(lambda x: tf.image.resize(x, (26, segment_length)), output_shape=(26, segment_length, 1))(decoded)  # Output: (26, 1920, 1)
     
     
 
