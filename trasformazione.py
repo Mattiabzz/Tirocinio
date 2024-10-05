@@ -130,7 +130,7 @@ def check_overlap(segments, segment_length, overlap, sfreq):
 # all_data = []
 dirData = "Data/" #dirEdf = "Data/Edf"
 dirEdf = "Data/Edf"
-# dirEdf = "Data/Temp"
+dirEdf = "Data/Temp"
 segment_split_all = []
 overlap = 0.8   #percentuale di sovrapposzione
 window_size = 0.5 # Lunghezza della finestra in secondi
@@ -143,13 +143,45 @@ pazienza = 10
 # for dirpath, dirnames, filenames in os.walk(dirData):
 #     print(f"Directory: {dirpath}")
 
-filenames = [f for f in os.listdir(dirEdf) if "edf" in f]
+dirData = os.path.abspath('Data') #<-- corretto il percorso 
+
+# Path relativo alla cartella 'edf'
+path_edf = os.path.join(dirData, "Edf")
+
+# print(f"percorso cartella edf {path_edf}")
+
+images_path = os.path.join(dirData, "images")
+weights_path = os.path.join(dirData, "weights")
+
+if not os.path.exists(images_path):
+    os.makedirs(images_path)
+    
+if not os.path.exists(weights_path):
+    os.makedirs(weights_path)
+
+
+# print(f"percorso dirData = {dirData}")
+# print(f"percorso dirEdf = {path_edf}")
+# print(f"percorso images_path = {images_path}")
+# print(f"percorso weights_path = {weights_path}")
+
+# path_edf = os.path.join(dirData, "Temp")
+
+filenames = [f for f in os.listdir(path_edf) if "edf" in f]
+
+# print(filenames)
+
+# Salvataggio del modello Keras
+model_path = os.path.join(weights_path, 'autoencoder_model.h5')
+grafico_app_path = os.path.join(images_path, 'grafico_apprendimento.png')
+grafico_cluster_path = os.path.join(images_path, 'grafico_cluster.png')
+
 
 segment_split_temp = []
 
 for file in filenames:
     if file.endswith('.edf'):  # Controlla se il file ha estensione .edf
-        file_path = os.path.join(dirEdf, file)
+        file_path = os.path.join(path_edf, file)
         print(f"\tFile: {file_path}")
         #raw = mne.io.read_raw_edf(file_path, preload=True)
 
@@ -307,8 +339,7 @@ history = autoencoder.fit(eeg_train, eeg_train,
                 validation_data=(eeg_val, eeg_val),
                 callbacks=[early_stopping])
 
-if not os.path.exists(dirData+"images"):
-    os.makedirs(dirData+"images")
+
 
 #grafico dell'apprendimento
 fig, ax = plt.subplots()
@@ -317,15 +348,12 @@ ax.plot(history.history["val_loss"],'r--', marker='.', label="Model 1 Val Loss")
 
 ax.legend()
 
-plt.savefig(dirData+'images/grafico_apprendimento.png')
+plt.savefig(grafico_app_path)
 plt.close()
 
 
-if not os.path.exists(dirData+"weigths"):
-    os.makedirs(dirData+"weigths")
-
 #salvataggio modello
-autoencoder.save(dirData+'weigths/autoencoder_model.h5')
+autoencoder.save(model_path)
 
 # # Salvataggio solo dei pesi
 # autoencoder.save_weights('Data/weigths/autoencoder_weights')
@@ -407,5 +435,5 @@ ax2.plot(max_k, max_silhouette, marker='o', color='red', markersize=10, label=f'
 plt.tight_layout()
 
 # Salvataggio dell'immagine
-plt.savefig(dirData+'images/grafico_cluster.png', dpi=300, bbox_inches='tight')
+plt.savefig(grafico_cluster_path, dpi=300, bbox_inches='tight')
 # plt.show()
