@@ -295,7 +295,7 @@ for cluster in range(num_clusters):
         plt.xlabel('Campioni')
         plt.ylabel('Ampiezza')
         plt.grid()
-        plt.legend()        ###dei vari segnali aggiungere il nome effetivo
+        plt.legend()      
         nome = "Cluster "+str(cluster) +" - Canale "+ str(channel_names[channel])+".png"
         grafico_cluster_path = os.path.join(images_clus_path, nome)
 
