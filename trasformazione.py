@@ -273,66 +273,70 @@ print("Forma dei dati di training:", eeg_train.shape)
 print("Forma dei dati di validation:", eeg_val.shape)
 print("Forma dei dati di test:", eeg_test.shape)
 
-input_eeg = layers.Input(shape=input_shape)
+strategy = tf.distribute.MirroredStrategy()
 
-# Encoder convoluzionale
- # Blocchi Conv2D + Pooling
-x = layers.Conv2D(32, (3, 3), padding='same', activation='relu')(input_eeg)
-x = layers.Conv2D(32, (3, 3), padding='same', activation='relu')(x)
-x = layers.MaxPooling2D(pool_size=(2, 2))(x)  
+with strategy.scope():
 
-x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
-x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
-x = layers.MaxPooling2D(pool_size=(2, 2))(x)  
+    input_eeg = layers.Input(shape=input_shape)
 
-x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
-x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
-x = layers.MaxPooling2D(pool_size=(2, 2))(x) 
+    # Encoder convoluzionale
+    # Blocchi Conv2D + Pooling
+    x = layers.Conv2D(32, (3, 3), padding='same', activation='relu')(input_eeg)
+    x = layers.Conv2D(32, (3, 3), padding='same', activation='relu')(x)
+    x = layers.MaxPooling2D(pool_size=(2, 2))(x)  
 
-x = layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
-x = layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
-x = layers.MaxPooling2D(pool_size=(3, 1))(x)  
+    x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
+    x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
+    x = layers.MaxPooling2D(pool_size=(2, 2))(x)  
 
-# Bottleneck (la rappresentazione latente, codifica)
-encoded = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
+    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
+    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
+    x = layers.MaxPooling2D(pool_size=(2, 2))(x) 
 
-# Decoder convoluzionale
-# Blocchi di UpSampling2D + Conv2D Trasposta (Conv2DTranspose)
-x = layers.Conv2DTranspose(256, (3, 3), padding='same', activation='relu')(encoded)
-x = layers.Conv2DTranspose(256, (3, 3), padding='same', activation='relu')(x)
-x = layers.UpSampling2D(size=(3, 1))(x)  
+    x = layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
+    x = layers.Conv2D(256, (3, 3), padding='same', activation='relu')(x)
+    x = layers.MaxPooling2D(pool_size=(3, 1))(x)  
 
-x = layers.Conv2DTranspose(128, (3, 3), padding='same', activation='relu')(x)
-x = layers.Conv2DTranspose(128, (3, 3), padding='same', activation='relu')(x)
-x = layers.UpSampling2D(size=(2, 2))(x)  
+    # Bottleneck (la rappresentazione latente, codifica)
+    encoded = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(x)
 
-x = layers.Conv2DTranspose(64, (3, 3), padding='same', activation='relu')(x)
-x = layers.Conv2DTranspose(64, (3, 3), padding='same', activation='relu')(x)
-x = layers.UpSampling2D(size=(2, 2))(x)  
+    # Decoder convoluzionale
+    # Blocchi di UpSampling2D + Conv2D Trasposta (Conv2DTranspose)
+    x = layers.Conv2DTranspose(256, (3, 3), padding='same', activation='relu')(encoded)
+    x = layers.Conv2DTranspose(256, (3, 3), padding='same', activation='relu')(x)
+    x = layers.UpSampling2D(size=(3, 1))(x)  
 
-x = layers.Conv2DTranspose(32, (3, 3), padding='same', activation='relu')(x)
-x = layers.Conv2DTranspose(32, (3, 3), padding='same', activation='relu')(x)
-x = layers.UpSampling2D(size=(2, 2))(x)  
+    x = layers.Conv2DTranspose(128, (3, 3), padding='same', activation='relu')(x)
+    x = layers.Conv2DTranspose(128, (3, 3), padding='same', activation='relu')(x)
+    x = layers.UpSampling2D(size=(2, 2))(x)  
 
-# Strato finale per la ricostruzione
-decoded = layers.Conv2D(1, (3, 3), padding='same', activation='sigmoid')(x)  
+    x = layers.Conv2DTranspose(64, (3, 3), padding='same', activation='relu')(x)
+    x = layers.Conv2DTranspose(64, (3, 3), padding='same', activation='relu')(x)
+    x = layers.UpSampling2D(size=(2, 2))(x)  
 
-# Reshape finale per ottenere la forma corretta
-decoded = layers.Lambda(lambda x: tf.image.resize(x, (26, segment_length)), output_shape=(26, segment_length, 1))(decoded)  # Output: (26, 1920, 1)
+    x = layers.Conv2DTranspose(32, (3, 3), padding='same', activation='relu')(x)
+    x = layers.Conv2DTranspose(32, (3, 3), padding='same', activation='relu')(x)
+    x = layers.UpSampling2D(size=(2, 2))(x)  
+
+    # Strato finale per la ricostruzione
+    decoded = layers.Conv2D(1, (3, 3), padding='same', activation='sigmoid')(x)  
+
+    # Reshape finale per ottenere la forma corretta
+    decoded = layers.Lambda(lambda x: tf.image.resize(x, (26, segment_length)), output_shape=(26, segment_length, 1))(decoded)
     
     
 
-# Creazione del modello Autoencoder
-autoencoder = models.Model(input_eeg, decoded)
+    # Creazione del modello Autoencoder
+    autoencoder = models.Model(input_eeg, decoded)
 
-# Configurare l'early stopping                                  #verbose stampa il messegggio di attivazione di early stopping
-early_stopping = EarlyStopping(monitor='val_loss', patience=pazienza, verbose=1, restore_best_weights=True)
+    # Configurare l'early stopping                                  #verbose stampa il messegggio di attivazione di early stopping
+    early_stopping = EarlyStopping(monitor='val_loss', patience=pazienza, verbose=1, restore_best_weights=True)
 
-# Compilazione del modello
-autoencoder.compile(optimizer='adam', loss=MeanSquaredError())
+    # Compilazione del modello
+    autoencoder.compile(optimizer='adam', loss=MeanSquaredError())
 
 
-autoencoder.summary()
+# autoencoder.summary()
 
 
 history = autoencoder.fit(eeg_train, eeg_train, 
