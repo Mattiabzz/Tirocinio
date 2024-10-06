@@ -156,7 +156,7 @@ for file in filenames:
 
         raw = mne.io.read_raw_edf(file_path, preload=True)
         data, times = raw[:]
-
+        channel_names = raw.ch_names  # Ottieni i nomi dei canali dal file EDF
     
         # checkDistribuzione(data)
 
@@ -288,15 +288,15 @@ for cluster in range(num_clusters):
 
     
     # Visualizza i segnali di tutti i canali
-    for channel in range(26):  # Supponiamo di avere 26 canali
+    for channel in range(len(channel_names)):  # Supponiamo di avere 26 canali
         plt.figure(figsize=(12, 6))
-        plt.plot(selected_segment[:, channel], label=f'Canale {channel + 1}')
-        plt.title(f'Segnale Associato al Cluster {cluster} - Canale {channel + 1}')
+        plt.plot(selected_segment[:, channel], label=f'Canale {channel_names[channel]}')
+        plt.title(f'Segnale Associato al Cluster {cluster} - Canale {channel_names[channel]}')
         plt.xlabel('Campioni')
         plt.ylabel('Ampiezza')
         plt.grid()
-        plt.legend()
-        nome = "Cluster "+str(cluster) +" - Canale "+ str(channel + 1)+".png"
+        plt.legend()        ###dei vari segnali aggiungere il nome effetivo
+        nome = "Cluster "+str(cluster) +" - Canale "+ str(channel_names[channel])+".png"
         grafico_cluster_path = os.path.join(images_clus_path, nome)
 
         plt.savefig(grafico_cluster_path, dpi=300, bbox_inches='tight')
