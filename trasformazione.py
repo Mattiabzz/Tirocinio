@@ -154,13 +154,17 @@ path_edf = os.path.join(dirData, "Edf")
 # print(f"percorso cartella edf {path_edf}")
 
 images_path = os.path.join(dirData, "images")
-weights_path = os.path.join(dirData, "weights")
+weights_path = os.path.join(dirData, "model")
+cluster_path = os.path.join(dirData, "cluster")
 
 if not os.path.exists(images_path):
     os.makedirs(images_path)
     
 if not os.path.exists(weights_path):
     os.makedirs(weights_path)
+
+if not os.path.exists(cluster_path):
+    os.makedirs(cluster_path)  
 
 
 # print(f"percorso dirData = {dirData}")

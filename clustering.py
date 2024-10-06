@@ -120,7 +120,7 @@ def check_overlap(segments, segment_length, overlap, sfreq):
 
 ##### script
 
-dirData = "Data/" #dirEdf = "Data/Edf"
+dirData = "Data/"
 dirEdf = "Data/Temp"
 segment_split_all = []
 overlap = 0.8   #percentuale di sovrapposzione
@@ -130,20 +130,27 @@ window_size = 0.5 # Lunghezza della finestra in secondi
 num_clusters = 3
 # pazienza = 5
 
-filenames = [f for f in os.listdir(dirEdf) if "edf" in f]
+script_dir = os.path.dirname(os.path.abspath(__file__))
+dirData = os.path.join(script_dir, 'Data')
+cluster_path = os.path.join(dirData, "cluster")
+
+filenames = [f for f in os.listdir(cluster_path) if "edf" in f]
 
 segment_split_temp = []
 
 images_path = os.path.join(dirData, "images")
+weights_path = os.path.join(dirData, "model")
 
 images_clus_path = os.path.join(images_path, "clustering")
+
+model_path = os.path.join(weights_path, 'autoencoder_model.h5')
 
 if not os.path.exists(images_clus_path):
     os.makedirs(images_clus_path)
 
 for file in filenames:
     if file.endswith('.edf'):  # Controlla se il file ha estensione .edf
-        file_path = os.path.join(dirEdf, file)
+        file_path = os.path.join(cluster_path, file) 
         print(f"\tFile: {file_path}")
         #raw = mne.io.read_raw_edf(file_path, preload=True)
 
@@ -212,7 +219,7 @@ eeg_segments = np.expand_dims(all_segments_standardized, axis=-1)
 
 
 ###caricamento dell'autoencoder
-autoencoder = load_model(dirData+'weigths/autoencoder_model.h5')
+autoencoder = load_model(model_path)
 
 autoencoder.summary()
 
@@ -259,28 +266,14 @@ plt.xlabel('Componente Principale 1')
 plt.ylabel('Componente Principale 2')
 plt.colorbar(label='Cluster Label')
 
-plt.savefig(dirData+'images/grafico_PCA.png', dpi=300, bbox_inches='tight')
+grafico_PCA_path = os.path.join(images_clus_path, 'grafico_PCA.png')
+plt.savefig(grafico_PCA_path, dpi=300, bbox_inches='tight')
 # plt.show()
 plt.close()
 
 
 
 ####creazione grafico per mostrare i segnali
-
-# segment_split_array = np.array(segment_split)
-# print(segment_split_array.shape)
-
-# data_concatenated = segment_split_array.reshape(-1, 26)  # Reshape per unire i segmenti
-
-# data_concatenated = data_concatenated.T 
-
-# # print("Shape dopo concatenazione:", data_concatenated.shape))
-
-# # Inversa della normalizzazione
-# data_non_normalized = scaler.inverse_transform(data_concatenated.T).T 
-
-
-
 
 # Mostra il segnale associato a un punto di ogni cluster
 for cluster in range(num_clusters):
@@ -290,33 +283,11 @@ for cluster in range(num_clusters):
     # Seleziona il primo segmento di questo cluster per semplicità
     selected_index = cluster_indices[0]  
     
-    # Recupera il segmento normalizzato associato
-    selected_segment_normalized = all_segments_standardized[selected_index]
-    
-    # Ripristina il segmento alle dimensioni originali usando MinMaxScaler
-    original_min = scaler.data_min_
-    original_max = scaler.data_max_
-    
-    # Inverti la normalizzazione per ogni canale
-    # Aggiungiamo una dimensione a original_min e original_max
-    # original_min = original_min[np.newaxis, :]  # (1, 26)
-    # original_max = original_max[np.newaxis, :]  # (1, 26)
-
-    # Inverti la normalizzazione
-    # selected_segment = selected_segment_normalized * (original_max - original_min) + original_min
     all_segment = segment_signal(data,segment_length)
     selected_segment = all_segment[selected_index]
 
-    # # Assumendo che 'data' sia il tuo array di dati EEG
-    # max_amp = np.max(data)
-    # min_amp = np.min(data)
-    # mean_amp = np.mean(data)
-
-    # print(f"Massima ampiezza: {max_amp}, Minima ampiezza: {min_amp}, Media ampiezza: {mean_amp}")
-
     
     # Visualizza i segnali di tutti i canali
-    # plt.figure(figsize=(12, 10))
     for channel in range(26):  # Supponiamo di avere 26 canali
         plt.figure(figsize=(12, 6))
         plt.plot(selected_segment[:, channel], label=f'Canale {channel + 1}')
@@ -329,12 +300,8 @@ for cluster in range(num_clusters):
         grafico_cluster_path = os.path.join(images_clus_path, nome)
 
         plt.savefig(grafico_cluster_path, dpi=300, bbox_inches='tight')
+        plt.close()
         # plt.show()
         
-    # plt.show()
-
-
-# plt.savefig(dirData+'images/grafico_segnali.png', dpi=300, bbox_inches='tight')
-# plt.show()
 
 
