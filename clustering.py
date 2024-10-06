@@ -189,9 +189,9 @@ for file in filenames:
 
         step = int(segment_length * (1 - overlap))
 
-        segment_split = segment_signal(data_normalized,segment_length)
+        # segment_split = segment_signal(data_normalized,segment_length)
 
-        # segment_split = segment_signal_with_overlap(data_normalized,segment_length,step)
+        segment_split = segment_signal_with_overlap(data_normalized,segment_length,step)
         # print(segment_split.shape) #formato (dati, canali, time_steps) 
 
 
