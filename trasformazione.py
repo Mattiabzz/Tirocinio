@@ -135,9 +135,9 @@ segment_split_all = []
 overlap = 0.8   #percentuale di sovrapposzione
 window_size = 0.5 # Lunghezza della finestra in secondi
 epoche = 60
-batch_size = 256
+batch_size = 512
 num_clusters = 5
-pazienza = 10
+pazienza = 5
 
 
 # for dirpath, dirnames, filenames in os.walk(dirData):
