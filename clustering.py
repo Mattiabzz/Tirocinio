@@ -288,13 +288,15 @@ for cluster in range(num_clusters):
     all_segment = segment_signal(data,segment_length)
     selected_segment = all_segment[selected_index]
 
-    time_array = np.arange(0, segment_length) / sfreq  # Asse temporale in secondi
+    segment_length_actual = selected_segment.shape[1]
+
+    time_array = np.arange(0, segment_length_actual) / sfreq
     # Visualizza i segnali di tutti i canali
     for channel in range(len(channel_names)):  # Supponiamo di avere 26 canali
         plt.figure(figsize=(12, 6))
-        plt.plot(time_array, selected_segment[:, channel], label=f'Canale {channel_names[channel]}')
+        plt.plot(time_array, selected_segment[channel, :], label=f'Canale {channel_names[channel]}')
         plt.title(f'Segnale Associato al Cluster {cluster} - Canale {channel_names[channel]}')
-        plt.xlabel('Campioni')
+        plt.xlabel('Tempo')
         plt.ylabel('Ampiezza')
         plt.grid()
         plt.legend()      
