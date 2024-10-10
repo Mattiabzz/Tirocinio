@@ -172,7 +172,7 @@ if not os.path.exists(cluster_path):
 # print(f"percorso images_path = {images_path}")
 # print(f"percorso weights_path = {weights_path}")
 
-# path_edf = os.path.join(dirData, "Temp")
+path_edf = os.path.join(dirData, "Temp")
 
 filenames = [f for f in os.listdir(path_edf) if "edf" in f]
 
@@ -263,32 +263,32 @@ eeg_segments = np.expand_dims(all_segments_standardized, axis=-1)
 
 print(eeg_segments.shape)
 
-## aggiunta colab
-del all_segments_standardized
+# ## aggiunta colab
+# del all_segments_standardized
 
-gc.collect()
+# gc.collect()
 
 input_shape = eeg_segments.shape[1:]  # Restituisce (canali, campioni_temporali, 1)
 
 print("Forma dell'input:", input_shape)
 
 
-# Primo step: Dividere il dataset in 80% train+validation e 20% test    
-eeg_train_val, eeg_test = train_test_split(eeg_segments, test_size=0.2, random_state=42)
+# # Primo step: Dividere il dataset in 80% train+validation e 20% test    
+# eeg_train_val, eeg_test = train_test_split(eeg_segments, test_size=0.2, random_state=42)
 
-# Secondo step: Dividere il train+validation set in 80% train e 20% validation
-eeg_train, eeg_val = train_test_split(eeg_train_val, test_size=0.25, random_state=42)  # 0.25 * 0.8 = 0.2 del totale
+# # Secondo step: Dividere il train+validation set in 80% train e 20% validation
+# eeg_train, eeg_val = train_test_split(eeg_train_val, test_size=0.25, random_state=42)  # 0.25 * 0.8 = 0.2 del totale
 
-# Verifica delle forme dei dati
-print("Forma dei dati di training:", eeg_train.shape)
-print("Forma dei dati di validation:", eeg_val.shape)
-print("Forma dei dati di test:", eeg_test.shape)
+# # Verifica delle forme dei dati
+# print("Forma dei dati di training:", eeg_train.shape)
+# print("Forma dei dati di validation:", eeg_val.shape)
+# print("Forma dei dati di test:", eeg_test.shape)
 
-## aggiunta colab
-del eeg_train
-del eeg_val
+# ## aggiunta colab
+# del eeg_train
+# del eeg_val
 
-gc.collect()
+# gc.collect()
 
 ###caricamento dell'autoencoder
 autoencoder = load_model(model_path)
@@ -300,19 +300,19 @@ encoder = Model(inputs=autoencoder.input, outputs=autoencoder.get_layer('conv2d_
 
 encoder.summary()
 
-del autoencoder
-gc.collect()
+# del autoencoder
+# gc.collect()
 
 print("cancellato l'autoencoder\nInizio predict")
 
 # Ottenere le feature codificate 
-eeg_features = encoder.predict(eeg_test,batch_size=16)
+eeg_features = encoder.predict(eeg_segments)
 
 print("fine predict")
 
-del eeg_test
+# del eeg_test
 
-gc.collect()
+# gc.collect()
 
 print("Pre reshape")
 
