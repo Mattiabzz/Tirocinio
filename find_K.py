@@ -1,6 +1,7 @@
 import mne 
 import matplotlib.pyplot as plt
 import os
+import gc
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
@@ -265,6 +266,8 @@ print(eeg_segments.shape)
 ## aggiunta colab
 del all_segments_standardized
 
+gc.collect()
+
 input_shape = eeg_segments.shape[1:]  # Restituisce (canali, campioni_temporali, 1)
 
 print("Forma dell'input:", input_shape)
@@ -285,6 +288,8 @@ print("Forma dei dati di test:", eeg_test.shape)
 del eeg_train
 del eeg_val
 
+gc.collect()
+
 ###caricamento dell'autoencoder
 autoencoder = load_model(model_path)
 
@@ -297,6 +302,10 @@ encoder.summary()
 
 # Ottenere le feature codificate 
 eeg_features = encoder.predict(eeg_test)
+
+del eeg_test
+
+gc.collect()
 
 eeg_features = eeg_features.reshape(eeg_features.shape[0], -1)
 
