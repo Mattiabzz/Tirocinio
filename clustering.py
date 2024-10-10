@@ -231,6 +231,8 @@ encoder.summary()
 # Ottenere le feature codificate 
 eeg_features = encoder.predict(eeg_segments)
 
+print("fine del predict")
+
 eeg_features = eeg_features.reshape(eeg_features.shape[0], -1)
 
 ##### clustering 
