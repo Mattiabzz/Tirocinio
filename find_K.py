@@ -308,6 +308,8 @@ print("cancellato l'autoencoder\nInizio predict")
 # Ottenere le feature codificate 
 eeg_features = encoder.predict(eeg_test,batch_size=16)
 
+print("fine predict")
+
 del eeg_test
 
 gc.collect()
