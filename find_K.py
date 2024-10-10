@@ -182,6 +182,8 @@ model_path = os.path.join(weights_path, 'autoencoder_model.h5')
 grafico_app_path = os.path.join(images_path, 'grafico_apprendimento.png')
 grafico_cluster_path = os.path.join(images_path, 'grafico_cluster.png')
 
+# print(f"percorso del modello ----> {model_path}")
+
 
 segment_split_temp = []
 
@@ -260,6 +262,9 @@ eeg_segments = np.expand_dims(all_segments_standardized, axis=-1)
 
 print(eeg_segments.shape)
 
+## aggiunta colab
+del all_segments_standardized
+
 input_shape = eeg_segments.shape[1:]  # Restituisce (canali, campioni_temporali, 1)
 
 print("Forma dell'input:", input_shape)
@@ -276,6 +281,9 @@ print("Forma dei dati di training:", eeg_train.shape)
 print("Forma dei dati di validation:", eeg_val.shape)
 print("Forma dei dati di test:", eeg_test.shape)
 
+## aggiunta colab
+del eeg_train
+del eeg_val
 
 ###caricamento dell'autoencoder
 autoencoder = load_model(model_path)
