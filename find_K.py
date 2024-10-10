@@ -300,12 +300,19 @@ encoder = Model(inputs=autoencoder.input, outputs=autoencoder.get_layer('conv2d_
 
 encoder.summary()
 
+del autoencoder
+gc.collect()
+
+print("cancellato l'autoencoder\nInizio predict")
+
 # Ottenere le feature codificate 
 eeg_features = encoder.predict(eeg_test)
 
 del eeg_test
 
 gc.collect()
+
+print("Pre reshape")
 
 eeg_features = eeg_features.reshape(eeg_features.shape[0], -1)
 
