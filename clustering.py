@@ -245,7 +245,7 @@ cluster_labels = kmeans.labels_
 # Puoi anche ottenere i centri dei cluster se necessario
 cluster_centers = kmeans.cluster_centers_
 
-# print(f"labels dei cluster {cluster_labels}\nCentro dei cluster {cluster_centers}")
+print(f"labels dei cluster {cluster_labels}\nCentro dei cluster {cluster_centers}")
 
 
 sil_score = silhouette_score(eeg_features, cluster_labels)
