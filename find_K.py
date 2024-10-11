@@ -1,15 +1,12 @@
 import mne 
 import matplotlib.pyplot as plt
 import os
-import gc
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.models import Model 
 from tensorflow.keras.models import load_model
 
 
@@ -134,14 +131,10 @@ dirEdf = "Data/Temp"
 segment_split_all = []
 overlap = 0.8   #percentuale di sovrapposzione
 window_size = 0.5 # Lunghezza della finestra in secondi
-epoche = 60
-batch_size = 1024
-num_clusters = 5
-pazienza = 5
+wcss = []
+silhouette_scores = []
+k_range = range(1, 11)
 
-
-# for dirpath, dirnames, filenames in os.walk(dirData):
-#     print(f"Directory: {dirpath}")
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 dirData = os.path.join(script_dir, 'Data')
@@ -166,13 +159,7 @@ if not os.path.exists(weights_path):
 if not os.path.exists(cluster_path):
     os.makedirs(cluster_path)  
 
-
-# print(f"percorso dirData = {dirData}")
-# print(f"percorso dirEdf = {path_edf}")
-# print(f"percorso images_path = {images_path}")
-# print(f"percorso weights_path = {weights_path}")
-
-path_edf = os.path.join(dirData, "Temp")
+# path_edf = os.path.join(dirData, "Temp")
 
 filenames = [f for f in os.listdir(path_edf) if "edf" in f]
 
@@ -254,41 +241,13 @@ all_segments_standardized = np.array(segment_split_all)
 print(all_segments_standardized.shape)
 
 #cancellazione della lista originale 
-del segment_split_all
+# del segment_split_all
 
 ######### rete neurale
 
 #aggiunta di una dimensione
 eeg_segments = np.expand_dims(all_segments_standardized, axis=-1)
 
-print(eeg_segments.shape)
-
-# ## aggiunta colab
-# del all_segments_standardized
-
-# gc.collect()
-
-input_shape = eeg_segments.shape[1:]  # Restituisce (canali, campioni_temporali, 1)
-
-print("Forma dell'input:", input_shape)
-
-
-# # Primo step: Dividere il dataset in 80% train+validation e 20% test    
-# eeg_train_val, eeg_test = train_test_split(eeg_segments, test_size=0.2, random_state=42)
-
-# # Secondo step: Dividere il train+validation set in 80% train e 20% validation
-# eeg_train, eeg_val = train_test_split(eeg_train_val, test_size=0.25, random_state=42)  # 0.25 * 0.8 = 0.2 del totale
-
-# # Verifica delle forme dei dati
-# print("Forma dei dati di training:", eeg_train.shape)
-# print("Forma dei dati di validation:", eeg_val.shape)
-# print("Forma dei dati di test:", eeg_test.shape)
-
-# ## aggiunta colab
-# del eeg_train
-# del eeg_val
-
-# gc.collect()
 
 ###caricamento dell'autoencoder
 autoencoder = load_model(model_path)
@@ -300,19 +259,10 @@ encoder = Model(inputs=autoencoder.input, outputs=autoencoder.get_layer('conv2d_
 
 encoder.summary()
 
-# del autoencoder
-# gc.collect()
-
-print("cancellato l'autoencoder\nInizio predict")
-
 # Ottenere le feature codificate 
 eeg_features = encoder.predict(eeg_segments)
 
 print("fine predict")
-
-# del eeg_test
-
-# gc.collect()
 
 print("Pre reshape")
 
@@ -321,20 +271,11 @@ eeg_features = eeg_features.reshape(eeg_features.shape[0], -1)
 print(f"numero delle feature {eeg_features.shape}")
 
 ##### clustering 
-kmeans = KMeans(n_clusters=num_clusters)
 
-# Standardizzazione delle feature 
-# scaler = StandardScaler()
-# features_scaled = scaler.fit_transform(eeg_features)
-
-
-# Inizializzazione della lista per il WCSS
-wcss = []
-silhouette_scores = []
-k_range = range(1, 11)
 
 for k in k_range:
 
+    print(k)
     kmeans = KMeans(n_clusters=k, random_state=42)
     kmeans.fit(eeg_features)
     cluster_assignments = kmeans.labels_
@@ -347,12 +288,6 @@ for k in k_range:
         sil_score = -1 
     
     silhouette_scores.append(sil_score)
-
-# # applicazione clustering sui dati codificati
-# kmeans.fit(eeg_features)
-
-# # Assegna ogni segmento EEG al cluster più vicino
-# cluster_assignments = kmeans.labels_
 
 max_silhouette = max(silhouette_scores)
 max_index = silhouette_scores.index(max_silhouette)
@@ -386,4 +321,3 @@ plt.tight_layout()
 
 # Salvataggio dell'immagine
 plt.savefig(grafico_cluster_path, dpi=300, bbox_inches='tight')
-# plt.show()
