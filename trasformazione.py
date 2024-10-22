@@ -132,8 +132,8 @@ dirData = "Data/" #dirEdf = "Data/Edf"
 dirEdf = "Data/Edf"
 dirEdf = "Data/Temp"
 segment_split_all = []
-overlap = 0.8   #percentuale di sovrapposzione
-window_size = 0.5 # Lunghezza della finestra in secondi
+overlap = 0.10   #percentuale di sovrapposzione
+window_size = 5 # Lunghezza della finestra in secondi
 epoche = 60
 batch_size = 512
 num_clusters = 5

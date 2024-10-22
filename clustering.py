@@ -123,8 +123,8 @@ def check_overlap(segments, segment_length, overlap, sfreq):
 dirData = "Data/"
 dirEdf = "Data/Temp"
 segment_split_all = []
-overlap = 0.8   #percentuale di sovrapposzione
-window_size = 0.5 # Lunghezza della finestra in secondi
+overlap = 0.10  #percentuale di sovrapposzione
+window_size = 5 # Lunghezza della finestra in secondi
 # epoche = 1
 # batch_size = 2
 num_clusters = 3
