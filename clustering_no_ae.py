@@ -163,7 +163,7 @@ if not os.path.exists(cluster_path):
 if not os.path.exists(images_clus_path):
     os.makedirs(images_clus_path)
 
-path_edf = os.path.join(dirData, "Temp")
+path_edf = os.path.join(dirData, "cluster")
 
 filenames = [f for f in os.listdir(path_edf) if "edf" in f]
 
@@ -188,7 +188,7 @@ for file in filenames:
         raw = mne.io.read_raw_edf(file_path, preload=True)
         data, times = raw[:]
         channel_names = raw.ch_names  # Ottieni i nomi dei canali dal file EDF
-        
+
         # checkDistribuzione(data)
 
         #######  normalizzazione dei segnali 
