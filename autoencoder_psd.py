@@ -303,7 +303,7 @@ with strategy.scope():
     autoencoder = Model(inputs=input_layer, outputs=decoded)
 
     # Compila il modello
-    autoencoder.compile(optimizer='adam', loss='mse')
+    autoencoder.compile(optimizer='adam', loss=MeanSquaredError())
 
     autoencoder.summary()
 
