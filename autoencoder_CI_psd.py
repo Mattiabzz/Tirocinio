@@ -256,8 +256,6 @@ print("\n")
 
 strategy = tf.distribute.MirroredStrategy()
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=pazienza, verbose=1, restore_best_weights=True) 
-
 for channel, data in aggregated_data.items():
     print(f"\nAddestramento dell'autoencoder per il canale: {channel}")
     
@@ -282,6 +280,7 @@ for channel, data in aggregated_data.items():
     channel_weights_path = os.path.join(weights_path, f"autoencoder_{channel}.h5")
     channel_images_path = os.path.join(grafico_apprendimento_path, f"grafico_apprendimento_{channel}.png")
 
+    early_stopping = EarlyStopping(monitor='val_loss', patience=pazienza, verbose=1, restore_best_weights=True) 
 
     # Configura il modello per ogni canale
     with strategy.scope():
