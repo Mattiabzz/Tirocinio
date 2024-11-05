@@ -300,7 +300,7 @@ for channel, data in aggregated_data.items():
         decoded = TimeDistributed(Dense(n_frequencies), name='time_distributed_output')(decoded)
 
         # Crea il modello autoencoder
-        autoencoder = Model(inputs=input_layer, outputs=decoded, name=f"autoencoder_{channel}")
+        autoencoder = Model(inputs=input_layer, outputs=decoded)
         autoencoder.compile(optimizer='adam', loss=MeanSquaredError())
     
     # Mostra il sommario del modello
