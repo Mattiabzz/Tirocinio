@@ -277,35 +277,46 @@ plt.close()
 
 ####creazione grafico per mostrare i segnali
 
+# Imposta il numero massimo di segmenti per cluster
+num_segments_per_cluster = 15
+
 # Mostra il segnale associato a un punto di ogni cluster
 for cluster in range(num_clusters):
     # Trova gli indici dei segmenti nel cluster
     cluster_indices = np.where(cluster_labels == cluster)[0]
     
-    # Seleziona il primo segmento di questo cluster per semplicità
-    selected_index = cluster_indices[0]  
+    selected_indices = cluster_indices[:num_segments_per_cluster]
     
     all_segment = segment_signal(data,segment_length)
-    selected_segment = all_segment[selected_index]
+    # print(all_segment.shape)
 
-    segment_length_actual = selected_segment.shape[1]
+    # selected_segment = all_segment[selected_index]
 
-    time_array = np.arange(0, segment_length_actual) / sfreq
-    # Visualizza i segnali di tutti i canali
-    for channel in range(len(channel_names)):  # Supponiamo di avere 26 canali
-        plt.figure(figsize=(12, 6))
-        plt.plot(time_array, selected_segment[channel, :], label=f'Canale {channel_names[channel]}')
-        plt.title(f'Segnale Associato al Cluster {cluster} - Canale {channel_names[channel]}')
-        plt.xlabel('Tempo')
-        plt.ylabel('Ampiezza')
-        plt.grid()
-        plt.legend()      
-        nome = "Cluster "+str(cluster) +" - Canale "+ str(channel_names[channel])+".png"
-        grafico_cluster_path = os.path.join(images_clus_path, nome)
-
-        plt.savefig(grafico_cluster_path, dpi=300, bbox_inches='tight')
-        plt.close()
-        # plt.show()
+    for i, selected_index in enumerate(selected_indices):
+        # Seleziona il segmento corrente
+        selected_segment = all_segment[selected_index]
         
+        segment_length_actual = selected_segment.shape[1]
+        time_array = np.arange(0, segment_length_actual) / sfreq
+
+        segment_length_actual = selected_segment.shape[1]
+
+        time_array = np.arange(0, segment_length_actual) / sfreq
+        # Visualizza i segnali di tutti i canali
+        for channel in range(len(channel_names)):  # Supponiamo di avere 26 canali
+            plt.figure(figsize=(12, 6))
+            plt.plot(time_array, selected_segment[channel, :], label=f'Canale {channel_names[channel]}')
+            plt.title(f'Segnale Associato al Cluster {cluster} - Canale {channel_names[channel]}')
+            plt.xlabel('Tempo')
+            plt.ylabel('Ampiezza')
+            plt.grid()
+            plt.legend()      
+            nome = f"Cluster {cluster} - Segmento {i+1} - Canale {channel_names[channel]}.png"
+            grafico_cluster_path = os.path.join(images_clus_path, nome)
+
+            plt.savefig(grafico_cluster_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            # plt.show()
+            
 
 

@@ -159,7 +159,7 @@ if not os.path.exists(weights_path):
 if not os.path.exists(cluster_path):
     os.makedirs(cluster_path)  
 
-path_edf = os.path.join(dirData, "cluster")
+path_edf = os.path.join(dirData, "Edf")
 
 filenames = [f for f in os.listdir(path_edf) if "edf" in f]
 

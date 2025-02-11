@@ -194,7 +194,7 @@ if not os.path.exists(cluster_path):
 # print(f"percorso images_path = {images_path}")
 # print(f"percorso weights_path = {weights_path}")
 
-# path_edf = os.path.join(dirData, "Temp")
+path_edf = os.path.join(dirData, "Temp")
 
 filenames = [f for f in os.listdir(path_edf) if "edf" in f]
 
@@ -316,7 +316,7 @@ history = autoencoder.fit(all_segments_standardized, all_segments_standardized,
 
 
 
-#grafico dell'apprendimento
+# #grafico dell'apprendimento
 fig, ax = plt.subplots()
 ax.plot(history.history["loss"],'r', marker='.', label="Model 1 Train Loss")
 ax.plot(history.history["val_loss"],'r--', marker='.', label="Model 1 Val Loss")
